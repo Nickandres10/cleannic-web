@@ -38,11 +38,35 @@ export default function Home() {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const mensaje = `Hola, me gustaría solicitar el paquete "${formData.paquete}". Mis datos son: Nombre: ${formData.nombre}, Teléfono: ${formData.telefono}, Email: ${formData.email}, Dirección: ${formData.direccion}, Observaciones: ${formData.observaciones}`;
-    const urlWhatsApp = `https://wa.me/593997569717?text=${encodeURIComponent(mensaje)}`;
-    window.open(urlWhatsApp, '_blank');
+    
+    try {
+      // Enviar datos por email
+      const response = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        // Abrir WhatsApp después de enviar el email
+        const mensaje = `Hola, me gustaría solicitar el paquete "${formData.paquete}". Mis datos son: Nombre: ${formData.nombre}, Teléfono: ${formData.telefono}, Email: ${formData.email}, Dirección: ${formData.direccion}, Observaciones: ${formData.observaciones}`;
+        const urlWhatsApp = `https://wa.me/593997569717?text=${encodeURIComponent(mensaje)}`;
+        window.open(urlWhatsApp, '_blank');
+        alert('Solicitud enviada correctamente por email y WhatsApp');
+      } else {
+        alert('Error al enviar la solicitud: ' + result.error);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Error al procesar tu solicitud');
+    }
+    
     closeModal();
   };
 
