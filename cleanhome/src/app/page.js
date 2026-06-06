@@ -1,4 +1,51 @@
+'use client';
+
+import { useState } from 'react';
+
 export default function Home() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedPackage, setSelectedPackage] = useState('');
+  const [formData, setFormData] = useState({
+    nombre: '',
+    telefono: '',
+    email: '',
+    direccion: '',
+    paquete: '',
+    observaciones: '',
+  });
+
+  const openModal = (packageName) => {
+    setSelectedPackage(packageName);
+    setFormData({ ...formData, paquete: packageName });
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedPackage('');
+    setFormData({
+      nombre: '',
+      telefono: '',
+      email: '',
+      direccion: '',
+      paquete: '',
+      observaciones: '',
+    });
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const mensaje = `Hola, me gustaría solicitar el paquete "${formData.paquete}". Mis datos son: Nombre: ${formData.nombre}, Teléfono: ${formData.telefono}, Email: ${formData.email}, Dirección: ${formData.direccion}, Observaciones: ${formData.observaciones}`;
+    const urlWhatsApp = `https://wa.me/593997569717?text=${encodeURIComponent(mensaje)}`;
+    window.open(urlWhatsApp, '_blank');
+    closeModal();
+  };
+
   const packages = [
     {
       name: "Básico Hogar",
@@ -180,9 +227,9 @@ export default function Home() {
                 </div>
 
                 <div className="flex-grow mb-8">
-                  <p className="text-gray-600 leading-relaxed">
+                  <div className="text-gray-600 leading-relaxed">
                     {item.description}
-                  </p>
+                  </div>
                 </div>
 
                 <div className="text-5xl font-bold text-yellow-600 mb-8 whitespace-nowrap self-center">
@@ -193,7 +240,9 @@ export default function Home() {
                   {item.name === 'Post Construcción' ? 'Tiempo estándar: 5 horas' : 'Tiempo estándar: 3 horas'}
                 </div>
 
-                <button className="w-full bg-blue-600 text-white py-4 rounded-2xl hover:bg-blue-700 transition font-semibold">
+                <button 
+                  onClick={() => openModal(item.name)}
+                  className="w-full bg-blue-600 text-white py-4 rounded-2xl hover:bg-blue-700 transition font-semibold">
                   Solicitar Servicio
                 </button>
               </div>
@@ -303,6 +352,95 @@ export default function Home() {
           </form>
         </div>
       </section>
+
+      {/* MODAL */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-md w-full p-8 max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-3xl font-bold">Solicitar Servicio</h2>
+              <button 
+                onClick={closeModal}
+                className="text-2xl font-bold text-gray-600 hover:text-black"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="grid gap-4">
+              <input
+                type="text"
+                name="nombre"
+                placeholder="Nombre Completo"
+                value={formData.nombre}
+                onChange={handleInputChange}
+                required
+                className="border p-3 rounded-xl text-sm"
+              />
+
+              <input
+                type="tel"
+                name="telefono"
+                placeholder="Teléfono"
+                value={formData.telefono}
+                onChange={handleInputChange}
+                required
+                className="border p-3 rounded-xl text-sm"
+              />
+
+              <input
+                type="email"
+                name="email"
+                placeholder="Correo Electrónico"
+                value={formData.email}
+                onChange={handleInputChange}
+                required
+                className="border p-3 rounded-xl text-sm"
+              />
+
+              <input
+                type="text"
+                name="direccion"
+                placeholder="Dirección"
+                value={formData.direccion}
+                onChange={handleInputChange}
+                required
+                className="border p-3 rounded-xl text-sm"
+              />
+
+              <select 
+                name="paquete"
+                value={formData.paquete}
+                onChange={handleInputChange}
+                required
+                className="border p-3 rounded-xl text-sm"
+              >
+                <option>Seleccione un paquete</option>
+                <option>Básico Hogar</option>
+                <option>Premium Hogar</option>
+                <option>Oficina Express</option>
+                <option>Post Construcción</option>
+              </select>
+
+              <textarea
+                name="observaciones"
+                rows={3}
+                placeholder="Observaciones"
+                value={formData.observaciones}
+                onChange={handleInputChange}
+                className="border p-3 rounded-xl text-sm"
+              ></textarea>
+
+              <button 
+                type="submit"
+                className="w-full bg-green-500 text-white py-3 rounded-xl font-semibold hover:bg-green-600 transition"
+              >
+                Enviar por WhatsApp
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* WHATSAPP */}
       <a
